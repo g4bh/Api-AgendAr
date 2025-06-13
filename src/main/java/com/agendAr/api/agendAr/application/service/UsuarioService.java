@@ -19,18 +19,30 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
     private final Map<String, Usuario> tokens = new HashMap<>();
 
+
     public Usuario cadastrarUsuario(UsuarioCadastroDTO dto) {
-        Usuario usuario = new Usuario(
-                dto.getNome(),
-                dto.getTelefone(),
-                dto.getEmail(),
-                dto.getSenha()
-        );
-        return usuarioRepository.save(usuario);
+        Optional<Usuario> existente = usuarioRepository.findByEmail(dto.getEmail());
+
+        if (existente.isPresent()) {
+            throw new IllegalArgumentException("Este e-mail já está cadastrado.");
+        }
+
+        Usuario novo = new Usuario(dto.getNome(), dto.getTelefone(), dto.getEmail(), dto.getSenha());
+        return usuarioRepository.save(novo);
     }
 
     public Optional<Usuario> login(UsuarioLoginDTO dto) {
-        return usuarioRepository.findByEmail(dto.getEmail());
+        Optional<Usuario> usuarioOptional = usuarioRepository.findByEmail(dto.getEmail());
+
+        if (usuarioOptional.isPresent()) {
+            Usuario usuario = usuarioOptional.get();
+
+            if (usuario.getSenha().equals(dto.getSenha())) {
+                return Optional.of(usuario);
+            }
+        }
+
+        return Optional.empty();
     }
 
     public Optional<Usuario> buscarPorId(Long id) {
