@@ -2,6 +2,7 @@ package com.agendAr.api.agendAr.application.controller;
 
 import com.agendAr.api.agendAr.application.service.UsuarioService;
 import com.agendAr.api.agendAr.domain.dto.UsuarioCadastroDTO;
+import com.agendAr.api.agendAr.domain.dto.UsuarioDTO;
 import com.agendAr.api.agendAr.domain.dto.UsuarioLoginDTO;
 import com.agendAr.api.agendAr.domain.entitys.Usuario;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +28,7 @@ public class UsuarioController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
-                    .body(e.getMessage()); // mensagem de erro customizada
+                    .body(e.getMessage());
         }
     }
 
@@ -40,7 +41,7 @@ public class UsuarioController {
         } else {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body("E-mail ou senha inválidos."); // 401 Unauthorized
+                    .body("E-mail ou senha inválidos.");
         }
     }
 
@@ -48,4 +49,18 @@ public class UsuarioController {
     public Usuario atualizar(@PathVariable Long id, @RequestBody UsuarioCadastroDTO dto) {
         return usuarioService.atualizarUsuario(id, dto);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> buscarPorId(@PathVariable Long id) {
+        Optional<Usuario> usuario = usuarioService.buscarPorId(id);
+
+        if (usuario.isPresent()) {
+            Usuario u = usuario.get();
+            UsuarioDTO dto = new UsuarioDTO(u.getId(), u.getNome(), u.getEmail(), u.getTelefone());
+            return ResponseEntity.ok(dto);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
+        }
+    }
+
 }
